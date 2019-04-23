@@ -1,0 +1,590 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "button": false,
+    "new_sheet": false,
+    "run_control": {
+     "read_only": false
+    }
+   },
+   "source": [
+    "<div style=\"text-align: right\">CSCI E-7 Introduction to Python Programming for Life Sciences</div>\n",
+    "<div style=\"text-align: right\">Dino Konstantopoulos, 01 March 2019 assigned Homework, which is due 08 March</div>\n",
+    "\n",
+    "\n",
+    "# Plant growth addendum\n",
+    "\n",
+    "Here's an option for using Turtle graphics, albeit less dramatic because it draws in a separate window, that does not require an install and so if you're using a MAC and are having trouble switching to python version 3.x in your terminal (check by running `python --version`).\n",
+    "\n",
+    "</br >\n",
+    "<center>\n",
+    "<img src=\"plant.png\" width=300 />\n",
+    "</center>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# From DNA to Plants\n",
+    "\n",
+    "Computational biology is about so much more than sequence analysis. Moving up the scale of biological systems, the amazingly fluid, yet highly robust process of organismal development has been source of interest for as long as there have been microscopes.\n",
+    "\n",
+    "Python is an excellent platform to explore the nature of development via the generative power of\n",
+    "simple rules or behaviour. This is a powerful idea, because even very simple rules, iterated over\n",
+    "time can generate complex and unpredictable patterns. From the flocking behaviour of birds to the\n",
+    "swarming of bees, biology is replete with examples where simple behaviours generate endlessly\n",
+    "fascinating patterns - an area of study that has become known as **complex adaptive systems**.\n",
+    "\n",
+    "You can even grow plants in your computer as Austrian biologist Aristid Lindenmayer did back in 1968 by modeling growth and development as found in filamentous organisms such as algae.\n",
+    "\n",
+    "Lindenmayer began by imagining a single one-dimensional line of cells, with any individual cell\n",
+    "receiving signals to either divide or grow only from their immediate left or right neighbor. He allowed\n",
+    "that each individual algae cell existed in one of two possible states: reproduction or growth. \n",
+    "\n",
+    "A cell in\n",
+    "the reproduction state, would split into two cells: one that would start in the growth state, and the\n",
+    "other would stay in the reproduction state. In addition, a cell that started in the growth state would\n",
+    "eventually become a reproduction cell. \n",
+    "\n",
+    "Putting these two rules together Lindenmayer came up with a\n",
+    "model of filamentous growth that captured some key features of real growth in plants such as \n",
+    "constant apical growth where the central “stem” (in the model this is a set of cells) remains the\n",
+    "same in appearance even as cells divide and move away from this central set of cells. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The heart of translating this idea into code is defining these biological intuitions as rigorous\n",
+    "algorithmic production rules. You can take the above two intuitions and codify them into two simple\n",
+    "rules. Call a cell in the reproduction state, A, and a cell in the growth state, B. A production rule\n",
+    "basically says, take a symbol on the left-hand side and replace it with another set of symbols on the\n",
+    "right-hand side. Here’s what it looks like:\n",
+    "\n",
+    "* B → A (rule #1: growth cell becomes a reproduction cell)\n",
+    "* A → AB (rule #2: reproduction cell splits into another reproduction, plus a growth cell)\n",
+    "\n",
+    "To complete the algorithm, we simply need to give the algorithm a cell to kick things off, say a\n",
+    "reproduction cell, A. \n",
+    "\n",
+    "We can run growth “by hand” (or perhaps we should really say “by head”) by\n",
+    "starting with A, then noticing that A is not a growth cell, so the first rule doesn’t apply, but it is a\n",
+    "reproduction cell, so we do apply the second rule. We now have a reproduction cell and growth cell,\n",
+    "or: AB.\n",
+    "\n",
+    "Let’s run the rules again, in this case the reproduction cell A will again become AB and the second\n",
+    "growth cell B will become a growth cell again, resulting in AB + A, or ABA. Keep doing this and\n",
+    "you get ABA -> ABAAB -> ABAABABA and so on. \n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def algae_growth(number, output=\"A\", show=False):\n",
+    "    for i in range(number):\n",
+    "        new_output = \"\"\n",
+    "        for letter in output:\n",
+    "            if letter == \"A\": # rule #2\n",
+    "                new_output += \"AB\"\n",
+    "            elif letter == \"B\": # rule #1\n",
+    "                new_output += \"A\"\n",
+    "        output = new_output # only update state after all letters are read\n",
+    "        if show: print(\"n =\", i+1, output, \"[\", len(output), \"]\")\n",
+    "    return output"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The outer loop, runs through number iterations, storing the result in the variable output. \n",
+    "\n",
+    "At the\n",
+    "beginning of each loop, we reinitialize our new_output to the empty string “”. \n",
+    "\n",
+    "Then we take our\n",
+    "existing output and use an inner for loop to go through it letter by letter. \n",
+    "\n",
+    "For the current letter in\n",
+    "the loop, we check whether it is an A or B. \n",
+    "\n",
+    "If it is an A, we simply append the two new letters to our\n",
+    "new_output string using the “+=” operator. \n",
+    "\n",
+    "Likewise if it is a B, we append an A. \n",
+    "\n",
+    "Once we have\n",
+    "examined that letter, we now assign the new_output back to output to start the process all over\n",
+    "again for the next iteration of growth and reproduction (the outer loop).\n",
+    "\n",
+    "Let’s put this all together in short main program and grow this algae already!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "n = 0 A [ 1 ]\n",
+      "n = 1 AB [ 2 ]\n",
+      "n = 2 ABA [ 3 ]\n",
+      "n = 3 ABAAB [ 5 ]\n",
+      "n = 4 ABAABABA [ 8 ]\n",
+      "n = 5 ABAABABAABAAB [ 13 ]\n",
+      "n = 6 ABAABABAABAABABAABABA [ 21 ]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'ABAABABAABAABABAABABA'"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "print(\"n = 0\", \"A\", \"[ 1 ]\")\n",
+    "algae_growth(6, output=\"A\", show=True) "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Note that after only six iterations, we already have very interesting patterns. We’ve also printed out\n",
+    "the length of each of the iterations of the cycle. \n",
+    "\n",
+    "Alert students will have noticed an interesting pattern:\n",
+    "these represent the **Fibonacci sequence** . This is actually pretty incredible when you think about it:\n",
+    "a set of two very simple rules iterated over and over can produce a sequence of cells the number of\n",
+    "which is deeply connected to one of the most fundamental mathematical sequences found in the\n",
+    "arrangement of leaves on stem and the formation of pinecones. We can also see the constant apical\n",
+    "growth mentioned at the beginning: the ABA pattern at the left-hand hand remains even as the growth\n",
+    "continues.\n",
+    "\n",
+    "Can we use these ideas to generate something that actually looks like a plant? The answer is, yes. To realize this requires a set of rules with a more complicated language, but still using the same basic simple logic. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We first imagine the “plant”, let’s imagine it as a “fern”, is growing on a two dimensional (2D)\n",
+    "surface. Here the outputs of the L-system are actually instructions telling the plant where on this 2D\n",
+    "surface to “grow” next. There are six basic symbols, which can be thought of as representing a\n",
+    "developmental “command”.\n",
+    "\n",
+    "* F = go forward\n",
+    "* X = stay\n",
+    "* + = turn right 25 degrees\n",
+    "* - = turn left 25 degrees\n",
+    "* [ = save current (x, y) position\n",
+    "* ] = go back to saved (x, y) position\n",
+    "\n",
+    "The production rules treat F and X as variables (meaning that only those two symbols are expanded\n",
+    "into other symbols), and +, -, [, ] are constants (they are terminal symbols: symbols that don’t get\n",
+    "expanded into anything else). So without further ado, here are the two rules:\n",
+    "\n",
+    "* F → FF\n",
+    "* X → F−[[X]+X]+F[+FX]−X\n",
+    "\n",
+    "OK, so these are definitely more complicated than the previous rules, but they work basically the\n",
+    "same. Every time you see an “F”, replace it with an “FF”, everytime you see an X, replace it with that\n",
+    "monstrosity on the right! That long expression embeds within it commands for the plant to move\n",
+    "forward, some commands to rotate left and right and to save and restore position. Think of it like a\n",
+    "little genetic program playing out in real time."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def plant_growth(number, output=\"X\", show=False):\n",
+    "    for i in range(number):\n",
+    "        new_output = \"\"\n",
+    "        for letter in output:\n",
+    "            # rule #1\n",
+    "            if letter == \"X\":\n",
+    "                new_output += \"F-[[X]+X]+F[+FX]-X\"\n",
+    "            elif letter == \"F\":\n",
+    "                new_output += \"FF\"\n",
+    "            else:\n",
+    "                new_output += letter\n",
+    "        output = new_output\n",
+    "        if show: print(\"n =\", i+1, output, \"[\", len(output), \"]\")\n",
+    "    return output"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "n = 1 F-[[X]+X]+F[+FX]-X [ 18 ]\n",
+      "n = 2 FF-[[F-[[X]+X]+F[+FX]-X]+F-[[X]+X]+F[+FX]-X]+FF[+FFF-[[X]+X]+F[+FX]-X]-F-[[X]+X]+F[+FX]-X [ 89 ]\n",
+      "n = 3 FFFF-[[FF-[[F-[[X]+X]+F[+FX]-X]+F-[[X]+X]+F[+FX]-X]+FF[+FFF-[[X]+X]+F[+FX]-X]-F-[[X]+X]+F[+FX]-X]+FF-[[F-[[X]+X]+F[+FX]-X]+F-[[X]+X]+F[+FX]-X]+FF[+FFF-[[X]+X]+F[+FX]-X]-F-[[X]+X]+F[+FX]-X]+FFFF[+FFFFFF-[[F-[[X]+X]+F[+FX]-X]+F-[[X]+X]+F[+FX]-X]+FF[+FFF-[[X]+X]+F[+FX]-X]-F-[[X]+X]+F[+FX]-X]-FF-[[F-[[X]+X]+F[+FX]-X]+F-[[X]+X]+F[+FX]-X]+FF[+FFF-[[X]+X]+F[+FX]-X]-F-[[X]+X]+F[+FX]-X [ 379 ]\n"
+     ]
+    }
+   ],
+   "source": [
+    "plant=plant_growth(3, output=\"X\", show=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now, how can we actually **draw** the plant? Here's how to use Turtle graphics **without importing an outer planet** library from github.\n",
+    "\n",
+    "Here we draw a square."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import turtle\n",
+    "import sys\n",
+    "from turtle import Turtle\n",
+    "t=Turtle()\n",
+    "#t.screen.bgcolor(\"black\")\n",
+    "t.color(\"red\")\n",
+    "t.hideturtle()\n",
+    " \n",
+    "def square(length):\n",
+    "    for steps in range(4):\n",
+    "        t.fd(length)\n",
+    "        t.left(90)\n",
+    " \n",
+    "square(100)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now if you're attentive you will notice that as soon as you run the cell above, a new window is created and turtle graphcis will get drawn in that window.\n",
+    "\n",
+    "Unfortunately, your kernel will also die at the end of the draw. That's ok, save your artwork, and then kill the newly created window.\n",
+    "\n",
+    "Now let's draw a random picture."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def random_drawing(turns,distance):\n",
+    "    for x in range(turns):\n",
+    "        right=t.right(random.randint(0,360))\n",
+    "        left=t.left(random.randint(0,360))\n",
+    "        t.color(random.choice([\"blue\",\"red\",\"green\"]))\n",
+    "        random.choice([right,left])\n",
+    "        t.fd(distance)\n",
+    " \n",
+    "random_drawing(100,50)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def draw_plant(actions):\n",
+    "    stk = []\n",
+    "    for action in actions:\n",
+    "        if action=='X':        # do nothing\n",
+    "            pass\n",
+    "        elif action== 'F':     # go forward\n",
+    "            turtle.forward(2)\n",
+    "        elif action=='+':      # rotate right by 25 degrees\n",
+    "            turtle.right(25)\n",
+    "        elif action=='-':      # rotate left by 25 degrees\n",
+    "            turtle.left(25)\n",
+    "        elif action=='[':\n",
+    "            # save the position and heading by \"pushing\" down on to the stack\n",
+    "            pos = turtle.position()\n",
+    "            head = turtle.heading()\n",
+    "            stk.append((pos, head))\n",
+    "        elif action==']':\n",
+    "            # restore position and heading: by \"popping\" off the first item from stack\n",
+    "            pos, head = stk.pop()\n",
+    "            turtle.penup()\n",
+    "            turtle.setposition(pos)\n",
+    "            turtle.setheading(head)\n",
+    "            turtle.pendown()\n",
+    "        else:\n",
+    "            raise ValueError(\"don't recognize action\", action)\n",
+    "        \n",
+    "    turtle.update()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "n = 0 X [ 1 ]\n"
+     ]
+    }
+   ],
+   "source": [
+    "import turtle\n",
+    "import sys\n",
+    "from turtle import Turtle\n",
+    "t=Turtle()\n",
+    "#t.screen.bgcolor(\"black\")\n",
+    "t.color(\"green\")\n",
+    "t.hideturtle()\n",
+    "\n",
+    "print(\"n = 0\", \"X\", \"[ 1 ]\")\n",
+    "plant=plant_growth(6, output=\"X\", show=False)\n",
+    "\n",
+    "# get initial position\n",
+    "x = 0\n",
+    "y = -turtle.window_height() / 2\n",
+    "\n",
+    "turtle.hideturtle()\n",
+    "turtle.left(90)\n",
+    "turtle.penup()\n",
+    "turtle.goto(x, y)\n",
+    "turtle.pendown()\n",
+    "draw_plant(plant)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This is how your plant should look like.\n",
+    "Note: This is the same picture as the first cell.\n",
+    "<center>\n",
+    "<img src=\"images/plant.png\" width=300 />\n",
+    "</center>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Homework\n",
+    "\n",
+    "<p><b>Q1:  Write a Python program, using Turtle graphic, to draw plants as described above and extend them into a forest scene from basic shape primitives that you define.  Use the code from above as a starting point.  Also briefly note your lessons learned in a markup cell.</b></p>\n",
+    "<b>25 Points</b>\n",
+    "</p>\n",
+    "<p>This problem is a good opportunity to work on a central concept in programming: bigger blocks are written from running smaller blocks over many times.  This will also give us an opportunity in class to cover iteration and recursion, and the difference between each approach. \n",
+    "To start modify plant production rules and grow an entire forest instead. How can you do this so that the forest looks realistic?  Also plot the forest using Turtle graphics.\n",
+    "\n",
+    "\n",
+    "Did you know a forest is the single largest organism on earth?\n",
+    "https://www.amusingplanet.com/2010/11/pando-single-largest-living-organism-on.html\n",
+    "</p>\n",
+    "The key idea to learn how to use functions as building blocks in more complex compositions. This will also be a good opportunity to learn about using repetition and randomization in your code to create interesting outcomes.\n",
+    "\n",
+    "So you have two functions: One for generating plants plant = plant_growth(...), and one for drawing them draw_plant(plan). If you test them out, you should be able to draw realistic-looking plants with something like this:\n",
+    "\n",
+    "```python\n",
+    "print(\"n = 0\", \"X\", \"[ 1 ]\")\n",
+    "plant=plant_growth(6, output=\"X\", show=False)\n",
+    "\n",
+    "# get initial position\n",
+    "x = 0\n",
+    "y = -turtle.window_height() / 2\n",
+    "\n",
+    "turtle.hideturtle()\n",
+    "turtle.left(90)\n",
+    "turtle.penup()\n",
+    "turtle.goto(x, y)\n",
+    "turtle.pendown()\n",
+    "draw_plant(plant)\n",
+    "```\n",
+    "\n",
+    "Now, can you draw realistic looking forests.   Where do you think you should spend more time, on the production rules, or on other aspects?  \n",
+    "\n",
+    "Turtle action for growing a plant: \n",
+    "* F = go forward\n",
+    "* X = stay\n",
+    "* (plus sign) = turn right 25 degrees\n",
+    "* (negative sign) = turn left 25 degrees\n",
+    "* [ = save current (x, y) position\n",
+    "* ] = go back to saved (x, y) position\n",
+    "\n",
+    "Production rules:\n",
+    "* F → FF\n",
+    "* X → F−[[X]+X]+F[+FX]−X\n",
+    "\n",
+    "To get started:\n",
+    "1.  Run this notebook without running the square and random cell.\n",
+    "2.  Add the following lines to cell that starts with: print(\"n = 0\", \"X\", \"[ 1 ]\")\n",
+    "\n",
+    "```python\n",
+    "import turtle\n",
+    "import sys\n",
+    "from turtle import Turtle\n",
+    "t=Turtle()\n",
+    "#t.screen.bgcolor(\"black\")  -- your choice\n",
+    "t.color(\"red\")    #-- your choice\n",
+    "t.hideturtle()\n",
+    "```\n",
+    "\n",
+    "If you  have 8GB RAM make sure you don't have many apps open.   It takes a while to print a plant.\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Create a function to draw a sun - this is my seperate function\n",
+    "from turtle import Turtle, Screen\n",
+    "\n",
+    "def draw_sun(size,x,y):\n",
+    "    sun = Turtle(shape=\"square\")\n",
+    "    sun.shapesize(size)\n",
+    "    sun.color(\"gold\")\n",
+    "    sun.penup()\n",
+    "    sun.goto(x,y)\n",
+    "    sun.stamp()\n",
+    "    sun.left(45)\n",
+    "    sun.stamp()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "n = 0 X [ 1 ]\n"
+     ]
+    }
+   ],
+   "source": [
+    "import turtle\n",
+    "import sys\n",
+    "from turtle import Turtle\n",
+    "t=Turtle()\n",
+    "t.screen.bgcolor(\"#add8e6\")\n",
+    "t.hideturtle()\n",
+    "turtle.color(\"green\")\n",
+    "\n",
+    "print(\"n = 0\", \"X\", \"[ 1 ]\")\n",
+    "\n",
+    "draw_sun(4,-100,100)\n",
+    "\n",
+    "x = -270\n",
+    "y = -turtle.window_height() / 2\n",
+    "\n",
+    "plant = plant_growth(3, output=\"X\", show=False)\n",
+    "for i in range(5):\n",
+    "\n",
+    "    turtle.setheading(90)\n",
+    "    turtle.penup()\n",
+    "    turtle.goto(x, y)\n",
+    "    turtle.pendown()\n",
+    "    draw_plant(plant)\n",
+    "    x+=30\n",
+    "\n",
+    "plant = plant_growth(4, output=\"X\", show=False)\n",
+    "for i in range(4):\n",
+    "    turtle.setheading(90)\n",
+    "    turtle.penup()\n",
+    "    turtle.goto(x, y)\n",
+    "    turtle.pendown()\n",
+    "    draw_plant(plant)\n",
+    "    x+=30\n",
+    "    \n",
+    "plant = plant_growth(3, output=\"X\", show=False)\n",
+    "for i in range(3):\n",
+    "\n",
+    "    turtle.setheading(90)\n",
+    "    turtle.penup()\n",
+    "    turtle.goto(x, y)\n",
+    "    turtle.pendown()\n",
+    "    draw_plant(plant)\n",
+    "    x+=30"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# HW 4 Lessons Learned:"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "1. Turtle will reference the last angle used inside of a loop. So to circumvent that, you can use setheading() to set the angle tone direction\n",
+    "\n",
+    "2. The dimensions of the screen generated from Turtle are x: (-300,300) and y: (-300,300) by default\n",
+    "\n",
+    "3. All actions must reference the name of the turtle, including color\n",
+    "\n",
+    "4. Color can be set by Hex Code AND by names like \"green\" or \"blue\"\n",
+    "\n",
+    "5. Use less complicated shapes when orienting yourself with Turtle (e.g. for position and angles) because it can be time consuming to draw and redraw.\n",
+    "\n",
+    "6. Printing an output can give a programmer useful feedback as to whether the output is the appropriate or expected value. I used this to determine position with print(turtle.position()) at the end of the loop"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
